@@ -1,0 +1,21 @@
+<div class="container">
+    <div>
+        <mat-form-field class="query-field">
+            <mat-label>Query</mat-label>
+            <textarea matInput
+                    cdkTextareaAutosize
+                    cdkAutosizeMaxRows="3"
+                    cdkAutosizeMaxRows="8"
+                    name="query"
+                    placeholder="Write query here" 
+                    [(ngModel)]="query">
+            </textarea>  
+        </mat-form-field>
+    </div>
+    <div>
+        <button mat-raised-button color="primary" (click)="runQuery()">Run</button>
+    </div>
+    <div>
+        Echo from Rust: {{ result }}
+    </div>
+</div>
