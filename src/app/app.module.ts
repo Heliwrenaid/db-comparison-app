@@ -1,22 +1,21 @@
 import { NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
-
 import { AppComponent } from "./app.component";
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import {MatSidenavModule} from '@angular/material/sidenav';
-import { MenuComponent } from './menu/menu.component';
 import { AppRoutingModule } from './app-routing.module';
 import { DbQueryComponent } from './db-query/db-query.component'; 
 import { FormsModule } from "@angular/forms";
 import {MatButtonModule} from '@angular/material/button'; 
 import {MatFormFieldModule, MAT_FORM_FIELD_DEFAULT_OPTIONS} from '@angular/material/form-field'; 
-import {MatInputModule} from '@angular/material/input'; 
+import {MatInputModule} from '@angular/material/input';
+import { DbTestComponent } from './db-test/db-test.component'; 
 
 @NgModule({
   declarations: [
     AppComponent,
-    MenuComponent,
-    DbQueryComponent
+    DbQueryComponent,
+    DbTestComponent
   ],
   imports: [
     BrowserModule,
