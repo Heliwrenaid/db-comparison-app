@@ -1,21 +1,37 @@
 <div class="container">
-    <div>
-        <mat-form-field class="query-field">
-            <mat-label>Query</mat-label>
-            <textarea matInput
-                    cdkTextareaAutosize
-                    cdkAutosizeMaxRows="3"
-                    cdkAutosizeMaxRows="8"
-                    name="query"
-                    placeholder="Write query here" 
-                    [(ngModel)]="query">
-            </textarea>  
-        </mat-form-field>
+
+    <mat-form-field class="textarea-field" color="primary">
+        <mat-label>Query</mat-label>
+        <textarea matInput
+                cdkTextareaAutosize
+                cdkAutosizeMinRows="1"
+                cdkAutosizeMaxRows="8"
+                name="query"
+                placeholder="Write query here" 
+                [(ngModel)]="query">
+        </textarea>  
+    </mat-form-field>
+
+    <div style="margin-bottom: 10px;">
+        <mat-button-toggle-group [(ngModel)]="targetDb">
+            <mat-button-toggle value="SurrealDb">SurrealDB</mat-button-toggle>
+            <mat-button-toggle value="Redis">Redis</mat-button-toggle>
+            <mat-button-toggle value="Skytable">Skytable</mat-button-toggle>
+        </mat-button-toggle-group>
     </div>
-    <div>
-        <button mat-raised-button color="primary" (click)="runQuery()">Run</button>
-    </div>
-    <div>
-        Echo from Rust: {{ result }}
-    </div>
+
+    <button mat-raised-button color="primary" class="run-button" (click)="runQuery()">Run</button>
+
+    <mat-form-field class="textarea-field">
+        <mat-label>Query result (seconds: {{ result.duration.secs }}, nanoseconds: {{ result.duration.nanos }})</mat-label>
+        <textarea matInput 
+            disabled="true"
+            cdkTextareaAutosize
+            cdkAutosizeMinRows="25"
+            cdkAutosizeMaxRows="25"
+            name="result"
+            [ngModel]="result.result">
+        </textarea>  
+    </mat-form-field>
+ 
 </div>

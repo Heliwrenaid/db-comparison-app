@@ -5,7 +5,8 @@ import { Routes, RouterModule } from '@angular/router';
 
 const routes: Routes = [
   { path: 'db/query', component: DbQueryComponent },
-  { path: 'db/test', component: DbTestComponent }
+  { path: 'db/test', component: DbTestComponent },
+  { path: '', component: DbQueryComponent },
 ]; 
 
 @NgModule({

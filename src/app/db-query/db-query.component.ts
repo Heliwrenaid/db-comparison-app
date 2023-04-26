@@ -1,5 +1,5 @@
 import { DbQueryService } from './../services/db-query.service';
-import { QueryResult } from './query-result-model';
+import { Db, QueryResult } from './query-result-model';
 import { Component, Input } from '@angular/core';
 
 @Component({
@@ -11,14 +11,21 @@ export class DbQueryComponent {
   @Input()
   query = ''
 
-  result = ''
+  result: QueryResult = {
+    result: '',
+    duration: {
+      nanos: 0,
+      secs: 0
+    }
+  }
+  targetDb = Db.SurrealDb;
 
   constructor (private dbQueryService: DbQueryService) {}
 
   runQuery() {
-    if (this.query) {
-      this.dbQueryService.run_query(this.query)
-        .then(response => this.result = response.result)
+    if (this.query && this.targetDb) {
+      this.dbQueryService.run_query(this.query, this.targetDb)
+        .then(result => this.result = result)
     }
   }
 }
