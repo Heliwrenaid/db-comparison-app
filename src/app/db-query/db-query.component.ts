@@ -38,8 +38,10 @@ export class DbQueryComponent {
         this.result.result = "Nanoseconds:" + nanosec / this.numberOfRepeatings;
       } else {
         this.dbQueryService.run_query(this.query, this.targetDb)
-          .then(result => this.result = result);
+          .then(result => this.result = result)
+          .catch(error => this.result.result = error.message)
       }
+
     }
   }
 }

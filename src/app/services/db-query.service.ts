@@ -15,4 +15,10 @@ export class DbQueryService {
         return invoke<QueryResult>('run_query', { 'queryCommand': queryCommand })
     }
 
+    public sortPkgsByFieldWithLimit(targetDb: Db, field: string, limitStart: number, limitEnd: number) {
+        return invoke<QueryResult>('sort_pkgs_by_field_with_limit', 
+            { 'targetDb': targetDb, 'field': field, 'limitStart': limitStart, 'limitEnd': limitEnd}
+        )
+    }
+
 }
