@@ -9,7 +9,7 @@ import { Component, Input } from '@angular/core';
 })
 export class DbQueryComponent {
   @Input()
-  query = ''
+  query = '';
 
   result: QueryResult = {
     result: '',
@@ -17,15 +17,29 @@ export class DbQueryComponent {
       nanos: 0,
       secs: 0
     }
-  }
+  };
   targetDb = Db.SurrealDb;
+  doRepeat = false;
+  numberOfRepeatings = 0;
 
   constructor (private dbQueryService: DbQueryService) {}
 
-  runQuery() {
+  async runQuery() {
     if (this.query && this.targetDb) {
-      this.dbQueryService.run_query(this.query, this.targetDb)
-        .then(result => this.result = result)
+      if (this.doRepeat) {
+        let nanosec = 0;
+        for (let i = 0; i < this.numberOfRepeatings; i++) {
+          await this.dbQueryService.run_query(this.query, this.targetDb)
+            .then(result => nanosec += result.duration.secs * 1000000000 + result.duration.nanos);
+        }
+        
+        this.result.duration.nanos = 0;
+        this.result.duration.secs = 0;
+        this.result.result = "Nanoseconds:" + nanosec / this.numberOfRepeatings;
+      } else {
+        this.dbQueryService.run_query(this.query, this.targetDb)
+          .then(result => this.result = result);
+      }
     }
   }
 }

@@ -16,6 +16,7 @@ $dark-theme: mat.define-dark-theme((
 @include mat.form-field-theme($dark-theme);
 @include mat.input-theme($dark-theme);
 @include mat.button-toggle-theme($dark-theme);
+@include mat.checkbox-theme($dark-theme);
 
 html, body { height: 100%; }
 body {

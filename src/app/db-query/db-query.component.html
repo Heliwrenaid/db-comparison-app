@@ -12,13 +12,19 @@
         </textarea>  
     </mat-form-field>
 
-    <div style="margin-bottom: 10px;">
+    <div class="radio-field">
         <mat-button-toggle-group [(ngModel)]="targetDb">
             <mat-button-toggle value="SurrealDb">SurrealDB</mat-button-toggle>
             <mat-button-toggle value="Redis">Redis</mat-button-toggle>
             <mat-button-toggle value="Skytable">Skytable</mat-button-toggle>
         </mat-button-toggle-group>
     </div>
+
+    <mat-checkbox [(ngModel)]="doRepeat">Repeat</mat-checkbox>
+    <mat-form-field *ngIf="doRepeat" class="repeatings-field">
+        <mat-label>Number of repeatings</mat-label>
+        <input matInput name="numberOfRepeatings" [(ngModel)]="numberOfRepeatings">
+    </mat-form-field>
 
     <button mat-raised-button color="primary" class="run-button" (click)="runQuery()">Run</button>
 
