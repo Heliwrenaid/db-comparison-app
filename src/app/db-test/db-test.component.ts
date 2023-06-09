@@ -12,7 +12,7 @@ export class DbTestComponent {
   constructor (private dbQueryService: DbQueryService) {}
 
   async sortPkgsByFieldWithLimit() {
-    this.dbQueryService.sortPkgsByFieldWithLimit(Db.Redis, "votes", 0, 5)
+    this.dbQueryService.sortPkgsByFieldWithLimit(Db.SurrealDb, "popularity", 0, 5)
       .catch(err => console.error(err))
       .then(response => console.log(response))
   }

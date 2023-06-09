@@ -1,8 +1,10 @@
 use std::time::{Instant};
 
 use skytable::{Query, Connection, actions::Actions, ddl::Ddl, types::{IntoSkyhashBytes, FromSkyhashBytes}, SkyResult};
-use anyhow::{Result, Ok};
+use anyhow::{Result, Ok, bail};
 use crate::models::{Comment, AdditionalPackageData, PackageDependency, BasicPackageData};
+use async_trait::async_trait;
+use std::cmp::Ordering::Equal;
 
 use super::{DbActions, DbResponse};
 
@@ -15,8 +17,9 @@ impl SkytableClient {
 }
 
 //TODO use list<binstr> ...?
+#[async_trait]
 impl DbActions for SkytableClient {
-    fn run_custom_query(&self, query: &str) -> Result<DbResponse<String>> {
+    async fn run_custom_query(&self, query: &str) -> Result<DbResponse<String>> {
         let mut connection = get_skytable_connection()?;
         let parts: Vec<&str> = query.split(" ").collect();
 
@@ -28,7 +31,7 @@ impl DbActions for SkytableClient {
         Ok(DbResponse { result, duration })
     }
     
-    fn sort_pkgs_by_field_with_limit(&self, field: &str, limit_start: u32, limit_end: u32) -> Result<DbResponse<Vec<String>>> {
+    async fn sort_pkgs_by_field_with_limit(&self, field: &str, limit_start: u32, limit_end: u32) -> Result<DbResponse<Vec<String>>> {
         let mut connection = get_skytable_connection()?;
         println!("asd");
         let start = Instant::now();
@@ -41,7 +44,7 @@ impl DbActions for SkytableClient {
             let package: BasicPackageData = connection.get(key)?;
             packages.push(package);
         }
-        packages.sort_by_key(|k| k.votes); //TODO: get by field???
+        sort_values_by(&mut packages, field)?;
         
         let result: Vec<String> = packages.iter().rev()
             .skip(limit_start as usize)
@@ -51,6 +54,21 @@ impl DbActions for SkytableClient {
         let duration = start.elapsed();
         Ok(DbResponse { result, duration })
     }
+}
+
+fn sort_values_by(data: &mut Vec<BasicPackageData>, key: &str) -> Result<()> {
+    match key {
+       "name" => data.sort_by_key(|k| k.name.clone()),
+       "version" => data.sort_by_key(|k| k.version.clone()),
+       "path_to_additional_data" => data.sort_by_key(|k| k.path_to_additional_data.clone()),
+       "votes" => data.sort_by_key(|k| k.votes),
+       "popularity" => data.sort_by(|a, b| a.popularity.partial_cmp(&b.popularity).unwrap_or(Equal)),
+       "description" => data.sort_by_key(|k| k.description.clone()),
+       "maintainer" => data.sort_by_key(|k| k.maintainer.clone()),
+       "last_updated" => data.sort_by_key(|k| k.last_updated.clone()),
+       _ => bail!("Unsuported field")
+    }
+    Ok(())
 }
 
 fn get_skytable_connection() -> Result<Connection> {

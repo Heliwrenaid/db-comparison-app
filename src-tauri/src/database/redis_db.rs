@@ -3,6 +3,7 @@ use std::time::Instant;
 use redis::Client;
 use anyhow::{Result, Ok};
 use super::{DbActions, DbResponse};
+use async_trait::async_trait;
 
 pub struct RedisDb {
     client: Client
@@ -21,8 +22,9 @@ impl RedisDb {
     }
 }
 
+#[async_trait]
 impl DbActions for RedisDb {
-    fn run_custom_query(&self, query: &str) -> Result<DbResponse<String>> {
+    async fn run_custom_query(&self, query: &str) -> Result<DbResponse<String>> {
         let parts: Vec<&str> = query.split(" ").collect();
         let mut cmd = redis::cmd(parts.get(0).unwrap());
         parts.iter()
@@ -37,12 +39,7 @@ impl DbActions for RedisDb {
         Ok(DbResponse { result, duration })
     }
 
-    fn sort_pkgs_by_field_with_limit(&self, field: &str, limit_start: u32, limit_end: u32) -> Result<DbResponse<Vec<String>>> {
-        // let query = &format!("sort pkgs_set by pkgs:*->{} limit {} {} desc",
-        //     field,
-        //     limit_start,
-        //     limit_end
-        // );
+    async fn sort_pkgs_by_field_with_limit(&self, field: &str, limit_start: u32, limit_end: u32) -> Result<DbResponse<Vec<String>>> {
         let mut connection = self.client.get_connection()?;
         let mut cmd = redis::cmd("SORT");
         cmd.arg(&["pkgs_set", "by", &format!("pkgs:*->{}", field), "limit", &limit_start.to_string(), &limit_end.to_string(), "DESC"]);
