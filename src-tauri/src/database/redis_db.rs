@@ -1,4 +1,4 @@
-use std::time::Instant;
+use std::time::{Instant, Duration};
 
 use redis::Client;
 use anyhow::{Result, Ok};
@@ -24,6 +24,21 @@ impl RedisDb {
 
 #[async_trait]
 impl DbActions for RedisDb {
+    async fn get_custom_query_time(&self, query: &str) -> Result<Duration> {
+        let parts: Vec<&str> = query.split(" ").collect();
+        let mut cmd = redis::cmd(parts.get(0).unwrap());
+        parts.iter()
+            .skip(1)
+            .for_each(|arg| _ = cmd.arg(arg));
+
+        let mut connection = self.client.get_connection()?;
+        let start = Instant::now();
+        cmd.query(&mut connection)?;
+        let duration = start.elapsed();
+        
+        Ok(duration)
+    }
+
     async fn run_custom_query(&self, query: &str) -> Result<DbResponse<String>> {
         let parts: Vec<&str> = query.split(" ").collect();
         let mut cmd = redis::cmd(parts.get(0).unwrap());

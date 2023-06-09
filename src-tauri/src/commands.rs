@@ -1,5 +1,5 @@
 use core::fmt;
-use std::error::Error;
+use std::{error::Error, time::Duration};
 use serde::{Serialize, Deserialize};
 use anyhow::Result;
 
@@ -38,6 +38,17 @@ impl From<anyhow::Error> for FrontendError {
 }
 
 // TODO: fix trait object with async
+#[tauri::command]
+pub async fn get_query_time(query_command: QueryCommand) -> Result<Duration, FrontendError> {
+    println!("time");
+    let response = match query_command.target_db {
+        Db::Redis => RedisDb::try_new()?.get_custom_query_time(&query_command.query).await?,
+        Db::Skytable => SkytableClient::new().get_custom_query_time(&query_command.query).await?,
+        Db::SurrealDb => SurrealDbClient::try_new().await?.get_custom_query_time(&query_command.query).await?
+    };
+    Ok(response)
+}
+
 #[tauri::command]
 pub async fn run_query(query_command: QueryCommand) -> Result<DbResponse<String>, FrontendError> {
     let response = match query_command.target_db {

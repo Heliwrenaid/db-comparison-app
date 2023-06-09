@@ -1,11 +1,12 @@
-use std::time::Instant;
+use std::time::{Instant, Duration};
 
+
+use crate::models::PackageData;
 
 use super::{DbActions, DbResponse};
-use anyhow::{Result, bail};
+use anyhow::Result;
 use async_trait::async_trait;
-use serde::Deserialize;
-use surrealdb::{Surreal, engine::remote::ws::{Ws, Client}, opt::auth::Root};
+use surrealdb::{Surreal, engine::remote::ws::{Ws, Client}, opt::auth::Root, Response};
 
 pub struct SurrealDbClient {
     db: Surreal<Client>,
@@ -27,26 +28,25 @@ impl SurrealDbClient {
     }
 }
 
-#[derive(Debug, Deserialize)]
-pub struct D {
-    pub name: String,
-    pub votes: i32
-}
-
 #[async_trait]
 impl DbActions for SurrealDbClient {
-    //TODO
+    async fn get_custom_query_time(&self, query: &str) -> Result<Duration> {
+        let start = Instant::now();
+        self.db.query(query).await?;
+        Ok(start.elapsed())
+    }
+
     async fn run_custom_query(&self, query: &str) -> Result<DbResponse<String>> {
         let start = Instant::now();
-        let mut response = self.db.query(query).await?;
-        println!("{:?}", response);
-        let result: Option<String> = response.take(0)?;
+        let mut response: Response = self.db.query(query).await?;
         let duration = start.elapsed();
-        if result.is_some() {
-            Ok(DbResponse { result: result.unwrap(), duration })
-        } else {
-            bail!("Result is empty")
+
+        let result: Option<PackageData> = response.take(0)?;
+        if let Some(data) = result {
+            let result = serde_json::to_string(&data)?;
+            return Ok(DbResponse { result, duration });
         }
+        Ok(DbResponse { result: "No data found".to_owned(), duration })
     }
 
     async fn sort_pkgs_by_field_with_limit(&self, field: &str, limit_start: u32, limit_end: u32) -> Result<DbResponse<Vec<String>>> {
@@ -74,7 +74,7 @@ mod test {
     #[tokio::test]
     async fn ss() -> Result<()> {
         let db = SurrealDbClient::try_new().await?;
-        db.sort_pkgs_by_field_with_limit("popularity", 1, 4).await?;
+        db.run_custom_query("SELECT VALUE basic.name as name FROM pkgs LIMIT BY 1").await?;
         Ok(())
     }
 }

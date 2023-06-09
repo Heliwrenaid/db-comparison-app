@@ -20,6 +20,7 @@ pub struct DbResponse<T: Serialize> {
 
 #[async_trait]
 pub trait DbActions {
+    async fn get_custom_query_time(&self, query: &str) -> Result<Duration>;
     async fn run_custom_query(&self, query: &str) -> Result<DbResponse<String>>;
     async fn sort_pkgs_by_field_with_limit(&self, field: &str, limit_start: u32, limit_end: u32) -> Result<DbResponse<Vec<String>>>;
 }

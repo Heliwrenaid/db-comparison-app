@@ -1,4 +1,4 @@
-use std::time::{Instant};
+use std::time::{Instant, Duration};
 
 use skytable::{Query, Connection, actions::Actions, ddl::Ddl, types::{IntoSkyhashBytes, FromSkyhashBytes}, SkyResult};
 use anyhow::{Result, Ok, bail};
@@ -19,6 +19,17 @@ impl SkytableClient {
 //TODO use list<binstr> ...?
 #[async_trait]
 impl DbActions for SkytableClient {
+    async fn get_custom_query_time(&self, query: &str) -> Result<Duration> {
+        let mut connection = get_skytable_connection()?;
+        let parts: Vec<&str> = query.split(" ").collect();
+
+        let start = Instant::now();
+        connection.run_query_raw(Query::from(parts))?;
+        let duration = start.elapsed();
+
+        Ok(duration)
+    }
+    
     async fn run_custom_query(&self, query: &str) -> Result<DbResponse<String>> {
         let mut connection = get_skytable_connection()?;
         let parts: Vec<&str> = query.split(" ").collect();
@@ -33,7 +44,6 @@ impl DbActions for SkytableClient {
     
     async fn sort_pkgs_by_field_with_limit(&self, field: &str, limit_start: u32, limit_end: u32) -> Result<DbResponse<Vec<String>>> {
         let mut connection = get_skytable_connection()?;
-        println!("asd");
         let start = Instant::now();
         connection.switch("pkgs:basic")?;
         let count = connection.dbsize()?;

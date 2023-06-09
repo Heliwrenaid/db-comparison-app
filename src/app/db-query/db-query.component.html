@@ -26,7 +26,9 @@
         <input matInput name="numberOfRepeatings" [(ngModel)]="numberOfRepeatings">
     </mat-form-field>
 
-    <button mat-raised-button color="primary" class="run-button" (click)="runQuery()">Run</button>
+    <mat-checkbox [checked]="timeOnly" (change)="timeOnly = $event.checked">Measure time only</mat-checkbox>
+
+    <button mat-raised-button color="primary" class="run-button" (click)="timeOnly ? getQueryTime() : runQuery()">Run</button>
 
     <mat-form-field class="textarea-field">
         <mat-label>Query result (seconds: {{ result.duration.secs }}, nanoseconds: {{ result.duration.nanos }})</mat-label>
