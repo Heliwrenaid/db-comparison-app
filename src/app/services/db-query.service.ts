@@ -1,18 +1,19 @@
-import { QueryResult, Db, QueryCommand, Duration } from './../db-query/query-result-model';
+import { QueryResult, Db, QueryCommand, Duration } from './../model/query';
 import { Injectable } from "@angular/core";
 import { invoke } from '@tauri-apps/api/tauri';
+import { BasicPackageData } from '../model/package';
 
 @Injectable({
     providedIn: 'root',
 })
 export class DbQueryService {
     
-    public runQuery(query: string, targetDb: Db): Promise<QueryResult> {
+    public runQuery(query: string, targetDb: Db): Promise<QueryResult<string>> {
         let queryCommand: QueryCommand = {
             query: query,
             target_db: targetDb
         }
-        return invoke<QueryResult>('run_query', { 'queryCommand': queryCommand })
+        return invoke<QueryResult<string>>('run_query', { 'queryCommand': queryCommand })
     }
 
     public getQueryTime(query: string, targetDb: Db): Promise<Duration> {
@@ -24,8 +25,14 @@ export class DbQueryService {
     }
 
     public sortPkgsByFieldWithLimit(targetDb: Db, field: string, limitStart: number, limitEnd: number) {
-        return invoke<QueryResult>('sort_pkgs_by_field_with_limit', 
+        return invoke<QueryResult<string[]>>('sort_pkgs_by_field_with_limit', 
             { 'targetDb': targetDb, 'field': field, 'limitStart': limitStart, 'limitEnd': limitEnd}
+        )
+    }
+
+    public getMostVotedPackages(targetDb: Db, number: number) {
+        return invoke<QueryResult<BasicPackageData[]>>('get_most_voted_pkgs', 
+            { 'targetDb': targetDb, 'number': number }
         )
     }
 

@@ -13,7 +13,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             commands::run_query,
             commands::sort_pkgs_by_field_with_limit,
-            commands::get_query_time
+            commands::get_query_time,
+            commands::get_most_voted_pkgs
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

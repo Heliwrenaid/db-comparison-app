@@ -1,5 +1,5 @@
 import { DbQueryService } from './../services/db-query.service';
-import { Db, QueryResult } from './query-result-model';
+import { Db, QueryResult } from './../model/query';
 import { Component, Input } from '@angular/core';
 
 @Component({
@@ -11,7 +11,7 @@ export class DbQueryComponent {
   @Input()
   query = '';
 
-  result: QueryResult = {
+  result: QueryResult<string> = {
     result: '',
     duration: {
       nanos: 0,

@@ -1,7 +1,7 @@
 use std::time::{Instant, Duration};
 
 
-use crate::models::PackageData;
+use crate::models::{PackageData, BasicPackageData};
 
 use super::{DbActions, DbResponse};
 use anyhow::Result;
@@ -30,13 +30,13 @@ impl SurrealDbClient {
 
 #[async_trait]
 impl DbActions for SurrealDbClient {
-    async fn get_custom_query_time(&self, query: &str) -> Result<Duration> {
+    async fn get_custom_query_time(&mut self, query: &str) -> Result<Duration> {
         let start = Instant::now();
         self.db.query(query).await?;
         Ok(start.elapsed())
     }
 
-    async fn run_custom_query(&self, query: &str) -> Result<DbResponse<String>> {
+    async fn run_custom_query(&mut self, query: &str) -> Result<DbResponse<String>> {
         let start = Instant::now();
         let mut response: Response = self.db.query(query).await?;
         let duration = start.elapsed();
@@ -49,7 +49,7 @@ impl DbActions for SurrealDbClient {
         Ok(DbResponse { result: "No data found".to_owned(), duration })
     }
 
-    async fn sort_pkgs_by_field_with_limit(&self, field: &str, limit_start: u32, limit_end: u32) -> Result<DbResponse<Vec<String>>> {
+    async fn sort_pkgs_by_field_with_limit(&mut self, field: &str, limit_start: u32, limit_end: u32) -> Result<DbResponse<Vec<String>>> {
         let query = 
             format!("SELECT VALUE name FROM (SELECT basic.name as name, basic.{} as key 
                 FROM pkgs ORDER BY key DESC LIMIT BY {} START AT {})",
@@ -63,6 +63,16 @@ impl DbActions for SurrealDbClient {
         let duration = start.elapsed();
         Ok(DbResponse { result, duration })
     }
+
+    async fn get_most_voted_pkgs(&mut self, number: u32) -> Result<DbResponse<Vec<BasicPackageData>>> {
+        let query = format!("SELECT VALUE basic from 
+            (SELECT basic, basic.votes as votes from pkgs ORDER BY votes LIMIT BY {})", number.to_string());
+        
+        let start = Instant::now();
+        let result: Vec<BasicPackageData> = self.db.query(query).await?.take(0)?;
+        let duration = start.elapsed();
+        Ok(DbResponse { result, duration })
+    }
 }
 
 #[cfg(test)]
@@ -72,9 +82,10 @@ mod test {
     use super::DbActions;
 
     #[tokio::test]
-    async fn ss() -> Result<()> {
-        let db = SurrealDbClient::try_new().await?;
-        db.run_custom_query("SELECT VALUE basic.name as name FROM pkgs LIMIT BY 1").await?;
+    async fn test_query() -> Result<()> {
+        let mut db = SurrealDbClient::try_new().await?;
+        let result = db.get_most_voted_pkgs(5).await?;
+        println!("{:?}", result);
         Ok(())
     }
 }

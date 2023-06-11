@@ -1,5 +1,5 @@
-export interface QueryResult {
-    result: string
+export interface QueryResult<T> {
+    result: T
     duration: Duration
 }
 
