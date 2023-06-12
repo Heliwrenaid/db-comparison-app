@@ -23,17 +23,11 @@ impl SkytableClient {
         self.connection.switch("pkgs:basic")?;
         let count = self.connection.dbsize()?;
         let keys: Vec<String> = self.connection.lskeys(count)?;
-        let mut result: Vec<BasicPackageData> = Vec::with_capacity(count as usize);
-
-        for key in &keys {
-            let package: BasicPackageData = self.connection.get(key)?;
-            result.push(package);
-        }
-        Ok(result)
+        let response: DbResponse<Vec<BasicPackageData>> = self.connection.mget(keys)?;
+        Ok(response.result)
     }
 }
 
-//TODO use list<binstr> ...?
 #[async_trait]
 impl DbActions for SkytableClient {
     async fn get_custom_query_time(&mut self, query: &str) -> Result<Duration> {
@@ -115,6 +109,19 @@ impl FromSkyhashBytes for BasicPackageData {
     }
 }
 
+impl FromSkyhashBytes for DbResponse<Vec<BasicPackageData>> {
+    fn from_element(element: skytable::Element) -> SkyResult<Self> {
+        let vec_of_bytes: Vec<Vec<u8>> = element.try_element_into()?;
+        let mut pkgs: Vec<BasicPackageData> = Vec::new();
+        for bytes in vec_of_bytes {
+            let pkg: BasicPackageData = serde_json::from_slice(&bytes)
+            .map_err(|e| skytable::error::Error::ParseError(e.to_string()))?;
+            pkgs.push(pkg);
+        }
+        skytable::SkyResult::Ok(DbResponse { result: pkgs, duration: Duration::ZERO })
+    }
+}
+
 impl IntoSkyhashBytes for &AdditionalPackageData {
     fn as_bytes(&self) -> Vec<u8> {
         serde_json::to_vec(self).expect("Cannot serialize AdditionalPackageData to Vec<u8>")
@@ -154,5 +161,20 @@ impl FromSkyhashBytes for PackageDependency {
         let bytes: Vec<u8> = element.try_element_into()?;
         serde_json::from_slice(&bytes)
             .map_err(|e| skytable::error::Error::ParseError(e.to_string()))
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::SkytableClient;
+    use anyhow::{Result, Ok};
+    use super::DbActions;
+
+    #[tokio::test]
+    async fn test_query() -> Result<()> {
+        let mut db = SkytableClient::try_new()?;
+        let result = db.get_most_voted_pkgs(5).await?;
+        println!("{:?}", result);
+        Ok(())
     }
 }
