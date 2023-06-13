@@ -32,11 +32,11 @@
                 </mat-form-field>
                 <mat-form-field class="field">
                     <mat-label>Limit</mat-label>
-                    <input matInput formControlName="limit">
+                    <input type="number" matInput formControlName="limit">
                 </mat-form-field>
                 <mat-form-field class="field">
                     <mat-label>Offset</mat-label>
-                    <input matInput formControlName="offset">
+                    <input type="number" matInput formControlName="offset">
                 </mat-form-field>
                 <button mat-raised-button color="primary" [disabled]="!getNamesOfSortedPkgsForm.valid">Submit</button>
             </form>
@@ -56,15 +56,14 @@
                 </div>
                 <mat-form-field class="field">
                     <mat-label>Limit</mat-label>
-                    <input matInput formControlName="limit">
+                    <input type="number" matInput formControlName="limit">
                 </mat-form-field>
                 <button mat-raised-button color="primary" [disabled]="!mostVotedPkgsForm.valid">Submit</button>
             </form>
             <div *ngIf="mostVotedPkgsResult">
-                Most voted packages:
-                <ol>
-                    <li *ngFor="let pkg of mostVotedPkgsResult.result">{{ pkg.name }}: {{ pkg.votes }} votes </li>
-                </ol>
+                <div class="chart">
+                    <app-bar-chart [chartData]="mostVotedPkgsResult.result | chartDataSeries:'name':'votes':'Votes'"></app-bar-chart>
+                </div>
                 <div>
                     <pre>{{ mostVotedPkgsResult | json }}</pre>
                 </div>

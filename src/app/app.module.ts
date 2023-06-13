@@ -1,3 +1,4 @@
+import { ChartDataSeriesPipe } from './data/chart-data-series.pipe';
 import { NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
 import { AppComponent } from "./app.component";
@@ -11,13 +12,17 @@ import {MatInputModule} from '@angular/material/input';
 import { DbTestComponent } from './db-test/db-test.component'; 
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import {MatCheckboxModule} from '@angular/material/checkbox';
-import {CdkAccordionModule} from '@angular/cdk/accordion'; 
+import {CdkAccordionModule} from '@angular/cdk/accordion';
+import { NgChartsModule } from 'ng2-charts';
+import { BarChartComponent } from './db-test/charts/bar-chart/bar-chart.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     DbQueryComponent,
-    DbTestComponent
+    DbTestComponent,
+    BarChartComponent,
+    ChartDataSeriesPipe
   ],
   imports: [
     BrowserModule,
@@ -30,7 +35,8 @@ import {CdkAccordionModule} from '@angular/cdk/accordion';
     MatInputModule,
     MatButtonToggleModule,
     MatCheckboxModule,
-    CdkAccordionModule
+    CdkAccordionModule,
+    NgChartsModule
   ],
   providers: [
     {provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: {appearance: 'fill'}}

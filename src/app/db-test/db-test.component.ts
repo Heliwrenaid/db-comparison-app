@@ -32,6 +32,7 @@ export class DbTestComponent {
   constructor (private dbQueryService: DbQueryService) {}
 
   async getNamesOfSortedPackagesByName() {
+    this.namesOfSortedPkgsResult = undefined;
     let data = this.getNamesOfSortedPkgsForm.value;
     this.dbQueryService.sortPkgsByFieldWithLimit(
         data.targetDb as Db,
@@ -44,8 +45,8 @@ export class DbTestComponent {
   }
 
   async getMostVotedPkgs() {
+    this.mostVotedPkgsResult = undefined;
     let data = this.mostVotedPkgsForm.value;
-    
     this.dbQueryService.getMostVotedPackages(
         data.targetDb as Db,
         data.limit as number
