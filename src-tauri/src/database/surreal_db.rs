@@ -66,7 +66,7 @@ impl DbActions for SurrealDbClient {
 
     async fn get_most_voted_pkgs(&mut self, number: u32) -> Result<DbResponse<Vec<BasicPackageData>>> {
         let query = format!("SELECT VALUE basic from 
-            (SELECT basic, basic.votes as votes from pkgs ORDER BY votes LIMIT BY {})", number.to_string());
+            (SELECT basic, basic.votes as votes from pkgs ORDER BY votes DESC LIMIT BY {})", number.to_string());
         
         let start = Instant::now();
         let result: Vec<BasicPackageData> = self.db.query(query).await?.take(0)?;

@@ -30,9 +30,9 @@ export class DbQueryService {
         )
     }
 
-    public getMostVotedPackages(targetDb: Db, number: number) {
+    public getMostVotedPackages(targetDb: Db, limit: number) {
         return invoke<QueryResult<BasicPackageData[]>>('get_most_voted_pkgs', 
-            { 'targetDb': targetDb, 'number': number }
+            { 'targetDb': targetDb, 'number': limit }
         )
     }
 

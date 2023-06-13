@@ -1,1 +1,78 @@
-<button (click)="sortPkgsByFieldWithLimit()">Sort packages by field with limits</button>
+<cdk-accordion class="example-accordion">
+    <cdk-accordion-item
+        *ngFor="let action of actions; let index = index;"
+        #accordionItem="cdkAccordionItem"
+        class="example-accordion-item"
+        role="button"
+        tabindex="0"
+        [attr.id]="'accordion-header-' + index"
+        [attr.aria-expanded]="accordionItem.expanded"
+        [attr.aria-controls]="'accordion-body-' + index">
+        <div class="example-accordion-item-header" (click)="accordionItem.toggle()">
+        {{ action }}
+        </div>
+        <div [ngSwitch]="index"
+        class="example-accordion-item-body"
+        role="region"
+        [style.display]="accordionItem.expanded ? '' : 'none'"
+        [attr.id]="'accordion-body-' + index"
+        [attr.aria-labelledby]="'accordion-header-' + index">
+        <div *ngSwitchCase="0">
+            <form [formGroup]="getNamesOfSortedPkgsForm" (ngSubmit)="getNamesOfSortedPackagesByName()">
+                <div class="radio-group">
+                    <mat-button-toggle-group formControlName="targetDb">
+                        <mat-button-toggle value="SurrealDb">SurrealDB</mat-button-toggle>
+                        <mat-button-toggle value="Redis">Redis</mat-button-toggle>
+                        <mat-button-toggle value="Skytable">Skytable</mat-button-toggle>
+                    </mat-button-toggle-group>
+                </div>
+                <mat-form-field class="field">
+                    <mat-label>Field name</mat-label>
+                    <input matInput formControlName="fieldName">
+                </mat-form-field>
+                <mat-form-field class="field">
+                    <mat-label>Limit</mat-label>
+                    <input matInput formControlName="limit">
+                </mat-form-field>
+                <mat-form-field class="field">
+                    <mat-label>Offset</mat-label>
+                    <input matInput formControlName="offset">
+                </mat-form-field>
+                <button mat-raised-button color="primary" [disabled]="!getNamesOfSortedPkgsForm.valid">Submit</button>
+            </form>
+            <div>
+                <pre>{{ namesOfSortedPkgsResult | json }}</pre>
+            </div>
+        </div>
+
+        <div *ngSwitchCase="1">
+            <form [formGroup]="mostVotedPkgsForm" (ngSubmit)="getMostVotedPkgs()">
+                <div class="radio-group">
+                    <mat-button-toggle-group formControlName="targetDb">
+                        <mat-button-toggle value="SurrealDb">SurrealDB</mat-button-toggle>
+                        <mat-button-toggle value="Redis">Redis</mat-button-toggle>
+                        <mat-button-toggle value="Skytable">Skytable</mat-button-toggle>
+                    </mat-button-toggle-group>
+                </div>
+                <mat-form-field class="field">
+                    <mat-label>Limit</mat-label>
+                    <input matInput formControlName="limit">
+                </mat-form-field>
+                <button mat-raised-button color="primary" [disabled]="!mostVotedPkgsForm.valid">Submit</button>
+            </form>
+            <div *ngIf="mostVotedPkgsResult">
+                Most voted packages:
+                <ol>
+                    <li *ngFor="let pkg of mostVotedPkgsResult.result">{{ pkg.name }}: {{ pkg.votes }} votes </li>
+                </ol>
+                <div>
+                    <pre>{{ mostVotedPkgsResult | json }}</pre>
+                </div>
+            </div>
+        </div>
+
+        </div>
+    </cdk-accordion-item>
+</cdk-accordion>
+  
+  
