@@ -16,7 +16,8 @@ fn main() {
             commands::get_query_time,
             commands::get_most_voted_pkgs,
             commands::insert_pkg,
-            commands::get_pkg
+            commands::get_pkg,
+            commands::remove_comments
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

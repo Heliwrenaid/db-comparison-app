@@ -103,6 +103,12 @@ impl DbActions for SurrealDbClient {
         let duration = start.elapsed();
         Ok(DbResponse { result , duration })
     }
+
+    async fn remove_comments(&mut self, pkg_name: &str) -> Result<DbResponse<()>> {
+        let query = format!("UPDATE pkgs SET comments = [] WHERE basic.name = '{}'", pkg_name);
+        let duration = self.get_custom_query_time(&query).await?;
+        Ok(DbResponse { result: (), duration })
+    }
 }
 
 #[cfg(test)]

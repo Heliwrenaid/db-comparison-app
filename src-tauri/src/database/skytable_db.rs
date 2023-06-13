@@ -3,6 +3,7 @@ use std::time::{Instant, Duration};
 use serde::{Deserialize, Serialize};
 use skytable::{Query, Connection, actions::Actions, ddl::Ddl, types::{IntoSkyhashBytes, FromSkyhashBytes}, SkyResult};
 use anyhow::{Result, Ok, bail};
+use tauri::regex::internal::Inst;
 use crate::models::{Comment, AdditionalPackageData, PackageDependency, BasicPackageData, PackageData};
 use async_trait::async_trait;
 use std::cmp::Ordering::Equal;
@@ -146,6 +147,14 @@ impl DbActions for SkytableClient {
             dependencies: dependencies.data,
         };
         Ok(DbResponse { result, duration })
+    }
+
+    async fn remove_comments(&mut self, pkg_name: &str) -> Result<DbResponse<()>> {
+        let start = Instant::now();
+        self.connection.switch(COMMENTS_TABLE)?;
+        self.connection.run_query_raw(Query::new().arg("LMOD").arg(pkg_name).arg("CLEAR"))?;
+        let duration = start.elapsed();
+        Ok(DbResponse { result: (), duration })
     }
 }
 

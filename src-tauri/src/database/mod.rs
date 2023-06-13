@@ -28,4 +28,5 @@ pub trait DbActions {
     async fn get_most_voted_pkgs(&mut self, number: u32) -> Result<DbResponse<Vec<BasicPackageData>>>;
     async fn insert_pkg(&mut self, pkg: &PackageData) -> Result<DbResponse<()>>;
     async fn get_pkg(&mut self, pkg_name: &str) -> Result<DbResponse<PackageData>>;
+    async fn remove_comments(&mut self, pkg_name: &str) -> Result<DbResponse<()>>;
 }

@@ -49,4 +49,10 @@ export class DbQueryService {
         )
     }
 
+    public removeComments(targetDb: Db, pkgName: string) {
+        return invoke<QueryResult<void>>('remove_comments', 
+            { 'targetDb': targetDb, 'pkgName': pkgName }
+        )
+    }
+
 }

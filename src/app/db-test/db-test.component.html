@@ -27,10 +27,6 @@
                             <mat-button-toggle value="Skytable">Skytable</mat-button-toggle>
                         </mat-button-toggle-group>
                     </div>
-                    <!-- <mat-form-field class="field">
-                        <mat-label>Package (as JSON)</mat-label>
-                        <input matInput formControlName="pkgJson">
-                    </mat-form-field> -->
                     <mat-form-field class="textarea">
                         <mat-label>Package (as JSON)</mat-label>
                         <textarea matInput 
@@ -73,6 +69,28 @@
             </div>
 
             <div *ngSwitchCase="2">
+                <form [formGroup]="removeCommentsForm" (ngSubmit)="removeComments()">
+                    <div class="radio-group">
+                        <mat-button-toggle-group formControlName="targetDb">
+                            <mat-button-toggle value="SurrealDb">SurrealDB</mat-button-toggle>
+                            <mat-button-toggle value="Redis">Redis</mat-button-toggle>
+                            <mat-button-toggle value="Skytable">Skytable</mat-button-toggle>
+                        </mat-button-toggle-group>
+                    </div>
+                    <mat-form-field class="field">
+                        <mat-label>Package name</mat-label>
+                        <input matInput formControlName="pkgName">
+                    </mat-form-field>
+                    <button mat-raised-button color="primary" [disabled]="!removeCommentsForm.valid">Submit</button>
+                </form>
+                <div *ngIf="removeCommentsResult">
+                    <div>
+                        <pre>{{ removeCommentsResult | json }}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngSwitchCase="3">
                 <form [formGroup]="getNamesOfSortedPkgsForm" (ngSubmit)="getNamesOfSortedPackagesByName()">
                     <div class="radio-group">
                         <mat-button-toggle-group formControlName="targetDb">
@@ -100,7 +118,7 @@
                 </div>
             </div>
 
-            <div *ngSwitchCase="3">
+            <div *ngSwitchCase="4">
                 <form [formGroup]="mostVotedPkgsForm" (ngSubmit)="getMostVotedPkgs()">
                     <div class="radio-group">
                         <mat-button-toggle-group formControlName="targetDb">

@@ -190,6 +190,14 @@ impl DbActions for RedisDb {
         Ok(DbResponse { result: pkg, duration })
     }
 
+    async fn remove_comments(&mut self, pkg_name: &str) -> Result<DbResponse<()>> {
+        let mut connection = self.client.get_connection()?;
+        let start = Instant::now();
+        connection.del(format!("pkgs:{}:cmnts", pkg_name))?;
+        let duration = start.elapsed();
+        Ok(DbResponse { result: (), duration })
+    }
+
 }
 
 #[cfg(test)]

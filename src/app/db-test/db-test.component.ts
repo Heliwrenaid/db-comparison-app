@@ -12,7 +12,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 })
 export class DbTestComponent {
 
-  actions = ['Insert package', 'Get package by name', 'Get names of <n> sorted packages by given field and offset', 'Get <n> most voted packages basic data'];
+  actions = ['Insert package', 'Get package by name', 'Remove comments of package', 'Get names of <n> sorted packages by given field and offset', 'Get <n> most voted packages basic data'];
   expandedIndex = 0;
 
   namesOfSortedPkgsResult: QueryResult<string[]> | void = undefined;
@@ -39,6 +39,12 @@ export class DbTestComponent {
   insertPkgForm = new FormGroup({
     targetDb: new FormControl(Db.SurrealDb, [Validators.required]),
     pkgJson: new FormControl('', [Validators.required]),
+  })
+
+  removeCommentsResult: QueryResult<void> | void = undefined;
+  removeCommentsForm = new FormGroup({
+    targetDb: new FormControl(Db.SurrealDb, [Validators.required]),
+    pkgName: new FormControl('test-7777', [Validators.required]),
   })
 
   constructor (private dbQueryService: DbQueryService) {}
@@ -88,6 +94,17 @@ export class DbTestComponent {
       )
       .catch(err => console.error(err))
       .then(response => this.insertPkgResult = response)
+  }
+
+  async removeComments() {
+    this.removeCommentsResult = undefined;
+    let data = this.removeCommentsForm.value;
+    this.dbQueryService.removeComments(
+        data.targetDb as Db,
+        data.pkgName as string
+      )
+      .catch(err => console.error(err))
+      .then(response => this.removeCommentsResult = response)
   }
 
 }

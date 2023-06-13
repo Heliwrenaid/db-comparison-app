@@ -98,3 +98,13 @@ pub async fn get_pkg(target_db: Db, name: &str) -> Result<DbResponse<PackageData
     };
     Ok(response)
 }
+
+#[tauri::command]
+pub async fn remove_comments(target_db: Db, pkg_name: &str) -> Result<DbResponse<()>, FrontendError> {
+    let response = match target_db {
+        Db::Redis => RedisDb::try_new()?.remove_comments(pkg_name).await?,
+        Db::Skytable => SkytableClient::try_new()?.remove_comments(pkg_name).await?,
+        Db::SurrealDb => SurrealDbClient::try_new().await?.remove_comments(pkg_name).await?,
+    };
+    Ok(response)
+}
