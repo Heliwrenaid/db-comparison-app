@@ -3,7 +3,7 @@ use std::{error::Error, time::Duration};
 use serde::{Serialize, Deserialize};
 use anyhow::Result;
 
-use crate::{database::{DbResponse, RedisDb, DbActions, SkytableClient, SurrealDbClient}, models::BasicPackageData};
+use crate::{database::{DbResponse, RedisDb, DbActions, SkytableClient, SurrealDbClient}, models::{BasicPackageData, PackageData}};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Db {
@@ -75,6 +75,26 @@ pub async fn get_most_voted_pkgs(target_db: Db, number: u32) -> Result<DbRespons
         Db::Redis => RedisDb::try_new()?.get_most_voted_pkgs(number).await?,
         Db::Skytable => SkytableClient::try_new()?.get_most_voted_pkgs(number).await?,
         Db::SurrealDb => SurrealDbClient::try_new().await?.get_most_voted_pkgs(number).await?
+    };
+    Ok(response)
+}
+
+#[tauri::command]
+pub async fn insert_pkg(target_db: Db, pkg: PackageData) -> Result<DbResponse<()>, FrontendError> {
+    let response = match target_db {
+        Db::Redis => RedisDb::try_new()?.insert_pkg(&pkg).await?,
+        Db::Skytable => SkytableClient::try_new()?.insert_pkg(&pkg).await?,
+        Db::SurrealDb => SurrealDbClient::try_new().await?.insert_pkg(&pkg).await?,
+    };
+    Ok(response)
+}
+
+#[tauri::command]
+pub async fn get_pkg(target_db: Db, name: &str) -> Result<DbResponse<PackageData>, FrontendError> {
+    let response = match target_db {
+        Db::Redis => RedisDb::try_new()?.get_pkg(name).await?,
+        Db::Skytable => SkytableClient::try_new()?.get_pkg(name).await?,
+        Db::SurrealDb => SurrealDbClient::try_new().await?.get_pkg(name).await?,
     };
     Ok(response)
 }

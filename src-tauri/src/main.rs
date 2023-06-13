@@ -14,7 +14,9 @@ fn main() {
             commands::run_query,
             commands::sort_pkgs_by_field_with_limit,
             commands::get_query_time,
-            commands::get_most_voted_pkgs
+            commands::get_most_voted_pkgs,
+            commands::insert_pkg,
+            commands::get_pkg
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

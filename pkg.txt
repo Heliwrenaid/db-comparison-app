@@ -1,0 +1,44 @@
+{
+    "additional": {
+      "confilcts": "sth",
+      "first_submitted": "2020-12-31 20:36 (UTC)",
+      "git_clone_url": "https://aur.archlinux.org/heroic-games-launcher-bin.git",
+      "keywords": "sd",
+      "license": "GPL3",
+      "provides": "sdsd",
+      "submitter": "sth"
+    },
+    "basic": {
+      "description": "Some desc",
+      "last_updated": "/account/MK",
+      "maintainer": "MK",
+      "name": "test-7777",
+      "path_to_additional_data": "/test-1",
+      "popularity": 3.2,
+      "version": "2.3",
+      "votes": 3
+    },
+    "comments": [
+      {
+        "content": "Seems to use hostname from inetutils, so maybe add as dependency.No idea, how I ended up without inetutils lol",
+        "header": "buggs commented on 2022-08-15 21:52 (UTC)"
+      },
+      {
+        "content": "This package is up to date. It aligns with the latest Github stable release, 2.3.7",
+        "header": "atomo commented on 2022-06-02 20:55 (UTC)"
+      }
+    ],
+    "dependencies": [
+      {
+        "group": "fuse2",
+        "packages": []
+      },
+      {
+        "group": "gawk",
+        "packages": [
+          "gawk-git",
+          "gawk-fake"
+        ]
+      }
+    ]
+  }

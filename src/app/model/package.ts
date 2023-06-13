@@ -8,22 +8,22 @@ export interface PackageData {
 export interface BasicPackageData {
     name: string,
     version: string,
-    pathToAdditionalData: string,
+    path_to_additional_data: string,
     votes: number,
     popularity: number,
     description: string,
     maintainer: string,
-    lastUpdated: string,
+    last_updated: string,
 }
 
 export interface AdditionalPackageData {
-    gitCloneUrl: string,
+    git_clone_url: string,
     keywords: string | null,
     license: string | null,
     confilcts: string | null,
     provides: string | null,
     submitter: string,
-    firstSubmitted: string,
+    first_submitted: string,
 }
 
 export interface PackageDependency {

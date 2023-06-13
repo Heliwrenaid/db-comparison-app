@@ -1,3 +1,4 @@
+import { PackageData } from './../model/package';
 import { QueryResult, Db, QueryCommand, Duration } from './../model/query';
 import { Injectable } from "@angular/core";
 import { invoke } from '@tauri-apps/api/tauri';
@@ -33,6 +34,18 @@ export class DbQueryService {
     public getMostVotedPackages(targetDb: Db, limit: number) {
         return invoke<QueryResult<BasicPackageData[]>>('get_most_voted_pkgs', 
             { 'targetDb': targetDb, 'number': limit }
+        )
+    }
+
+    public insertPkg(targetDb: Db, pkg: PackageData) {
+        return invoke<QueryResult<void>>('insert_pkg', 
+            { 'targetDb': targetDb, 'pkg': pkg }
+        )
+    }
+
+    public getPkg(targetDb: Db, name: string) {
+        return invoke<QueryResult<PackageData>>('get_pkg', 
+            { 'targetDb': targetDb, 'name': name }
         )
     }
 

@@ -1,8 +1,9 @@
 use std::{time::{Instant, Duration}, collections::HashMap};
 
 use redis::{Client, Commands};
-use anyhow::{Result, Ok};
-use crate::models::{BasicPackageData, PackageData};
+use anyhow::{Result, Ok, anyhow};
+use tauri::regex::internal::Inst;
+use crate::models::{BasicPackageData, PackageData, Comment, PackageDependency};
 
 use super::{DbActions, DbResponse};
 use async_trait::async_trait;
@@ -87,6 +88,108 @@ impl DbActions for RedisDb {
         let duration = start.elapsed();
         Ok(DbResponse { result, duration: duration + pkgs_name_response.duration })
     }
+
+    async fn insert_pkg(&mut self, pkg: &PackageData) -> Result<DbResponse<()>> {
+        let mut connection = self.client.get_connection()?;
+        let start = Instant::now();
+        connection.hset_multiple(
+            format!("pkgs:{}", pkg.basic.name),
+            &[
+                ("popularity", pkg.basic.popularity.to_string().as_str()),
+                ("last_updated", pkg.basic.last_updated.as_str()),
+                ("description", pkg.basic.description.as_str()),
+                ("maintainer", pkg.basic.maintainer.as_str()),
+                ("version", pkg.basic.version.as_str()),
+                ("votes", pkg.basic.votes.to_string().as_str()),
+                ("path_to_additional_data", pkg.basic.path_to_additional_data.as_str()),
+                ("firstsubmitted", pkg.additional.first_submitted.as_str()),
+                ("gitcloneurl", pkg.additional.git_clone_url.as_str()),
+                ("submitter", pkg.additional.submitter.as_str()),
+                (
+                    "confilcts",
+                    pkg.additional.confilcts.as_ref().map(|s| s.as_str()).unwrap_or(""),
+                ),
+                (
+                    "provides",
+                    pkg.additional.provides.as_ref().map(|s| s.as_str()).unwrap_or(""),
+
+                ),
+                (
+                    "keywords",
+                    pkg.additional.keywords.as_ref().map(|s| s.as_str()).unwrap_or(""),
+                ),
+                (
+                    "license",
+                    pkg.additional.license.as_ref().map(|s| s.as_str()).unwrap_or(""),
+                ),
+            ],
+        )?;
+
+        connection.sadd("pkgs_set", &pkg.basic.name)?;
+
+        for (idx, comment) in pkg.comments.iter().enumerate() {
+            connection.hset_multiple(
+                format!("pkgs:{}:cmnts:{}", pkg.basic.name, idx + 1),
+                &[("header", &comment.header), ("content", &comment.content)],
+            )?;
+
+            connection.sadd(
+                format!("pkgs:{}:cmnts", pkg.basic.name),
+                format!("pkgs:{}:cmnts:{}", pkg.basic.name, idx + 1),
+            )?;
+        }
+
+        for dependency in &pkg.dependencies {
+            for dep in &dependency.packages {
+                connection.rpush(
+                    format!("pkgs:{}:deps:{}", pkg.basic.name, dependency.group),
+                    dep,
+                )?;
+            }
+
+            connection.sadd(
+                format!("pkgs:{}:deps", pkg.basic.name),
+                format!("pkgs:{}:deps:{}", pkg.basic.name, dependency.group),
+            )?;
+        }
+        let duration = start.elapsed();
+        Ok(DbResponse { result: (), duration })
+    }
+
+    async fn get_pkg(&mut self, name: &str) -> Result<DbResponse<PackageData>> {
+        let mut conn = self.client.get_connection()?;
+        let start = Instant::now();
+        let mut pkg_dict: HashMap<String, String> = conn.hgetall(format!("pkgs:{}", name))?;
+        pkg_dict.insert("name".into(), name.into());
+
+        let mut pkg = PackageData::try_from(pkg_dict).map_err(|e| anyhow!(e))?;
+
+        let cmnts_list: Vec<String> = conn.smembers(format!("pkgs:{}:cmnts", pkg.basic.name))?;
+
+        let mut comments = vec![];
+
+        for cmnt in cmnts_list {
+            let cmnt_dict: HashMap<String, String> = conn.hgetall(cmnt)?;
+            comments.push(Comment::try_from(cmnt_dict)?);
+        }
+
+        pkg.comments = comments;
+
+        let group_list: Vec<String> = conn.smembers(format!("pkgs:{}:deps", pkg.basic.name))?;
+
+        let mut dependencies = vec![];
+
+        for group in group_list {
+            let packages: Vec<String> = conn.lrange(&group, 0, -1)?;
+
+            dependencies.push(PackageDependency { group, packages });
+        }
+        let duration = start.elapsed();
+        pkg.dependencies = dependencies;
+
+        Ok(DbResponse { result: pkg, duration })
+    }
+
 }
 
 #[cfg(test)]

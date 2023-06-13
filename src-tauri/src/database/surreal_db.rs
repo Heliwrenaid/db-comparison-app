@@ -4,9 +4,11 @@ use std::time::{Instant, Duration};
 use crate::models::{PackageData, BasicPackageData};
 
 use super::{DbActions, DbResponse};
-use anyhow::Result;
+use anyhow::{Result, Ok};
 use async_trait::async_trait;
 use surrealdb::{Surreal, engine::remote::ws::{Ws, Client}, opt::auth::Root, Response};
+
+type SurResult<T> = Result<T, surrealdb::Error>;
 
 pub struct SurrealDbClient {
     db: Surreal<Client>,
@@ -26,6 +28,16 @@ impl SurrealDbClient {
 
         Ok(Self { db })
     }
+}
+
+fn skip_already_exist_error<T>(res: SurResult<T>) -> Result<()> {
+    if let Err(e) = res {
+        if !e.to_string().contains("already exists") {
+            return Err(e.into());
+        }
+    }
+
+    Ok(())
 }
 
 #[async_trait]
@@ -72,6 +84,24 @@ impl DbActions for SurrealDbClient {
         let result: Vec<BasicPackageData> = self.db.query(query).await?.take(0)?;
         let duration = start.elapsed();
         Ok(DbResponse { result, duration })
+    }
+
+    async fn insert_pkg(&mut self, pkg: &PackageData) -> Result<DbResponse<()>> {
+        let start = Instant::now();
+        let _res: SurResult<()> = self
+            .db
+            .create(("pkgs", &pkg.basic.name))
+            .content(&pkg)
+            .await;
+        let duration = start.elapsed();
+        Ok(DbResponse { result: (), duration })
+    }
+
+    async fn get_pkg(&mut self, name: &str) -> Result<DbResponse<PackageData>> {
+        let start = Instant::now();
+        let result: PackageData = self.db.select(("pkgs", name)).await?;
+        let duration = start.elapsed();
+        Ok(DbResponse { result , duration })
     }
 }
 

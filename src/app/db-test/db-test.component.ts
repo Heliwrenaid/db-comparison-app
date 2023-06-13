@@ -1,4 +1,4 @@
-import { BasicPackageData } from './../model/package';
+import { BasicPackageData, PackageData } from './../model/package';
 import { QueryResult } from './../model/query';
 import { Component } from '@angular/core';
 import { Db } from '../model/query';
@@ -12,7 +12,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 })
 export class DbTestComponent {
 
-  actions = ['Get names of <n> sorted packages by given field and offset', 'Get <n> most voted packages basic data'];
+  actions = ['Insert package', 'Get package by name', 'Get names of <n> sorted packages by given field and offset', 'Get <n> most voted packages basic data'];
   expandedIndex = 0;
 
   namesOfSortedPkgsResult: QueryResult<string[]> | void = undefined;
@@ -27,6 +27,18 @@ export class DbTestComponent {
   mostVotedPkgsForm = new FormGroup({
     targetDb: new FormControl(Db.SurrealDb, [Validators.required]),
     limit: new FormControl(5, [Validators.required]),
+  })
+
+  getPkgResult: QueryResult<PackageData> | void = undefined;
+  getPkgForm = new FormGroup({
+    targetDb: new FormControl(Db.SurrealDb, [Validators.required]),
+    name: new FormControl('dropbox', [Validators.required]),
+  })
+
+  insertPkgResult: QueryResult<void> | void = undefined;
+  insertPkgForm = new FormGroup({
+    targetDb: new FormControl(Db.SurrealDb, [Validators.required]),
+    pkgJson: new FormControl('', [Validators.required]),
   })
 
   constructor (private dbQueryService: DbQueryService) {}
@@ -53,6 +65,29 @@ export class DbTestComponent {
       )
       .catch(err => console.error(err))
       .then(response => this.mostVotedPkgsResult = response)
+  }
+
+  async getPkg() {
+    this.getPkgResult = undefined;
+    let data = this.getPkgForm.value;
+    this.dbQueryService.getPkg(
+        data.targetDb as Db,
+        data.name as string
+      )
+      .catch(err => console.error(err))
+      .then(response => this.getPkgResult = response)
+  }
+
+  async insertPkg() {
+    this.insertPkgResult = undefined;
+    let data = this.insertPkgForm.value;
+    let pkg: PackageData = JSON.parse(data.pkgJson as string);
+    this.dbQueryService.insertPkg(
+        data.targetDb as Db,
+        pkg
+      )
+      .catch(err => console.error(err))
+      .then(response => this.insertPkgResult = response)
   }
 
 }
