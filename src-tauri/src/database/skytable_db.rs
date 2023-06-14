@@ -1,4 +1,4 @@
-use std::time::{Instant, Duration};
+use std::{time::{Instant, Duration}, collections::HashMap};
 
 use serde::{Deserialize, Serialize};
 use skytable::{Query, Connection, actions::Actions, ddl::Ddl, types::{IntoSkyhashBytes, FromSkyhashBytes}, SkyResult};
@@ -156,6 +156,30 @@ impl DbActions for SkytableClient {
         let duration = start.elapsed();
         Ok(DbResponse { result: (), duration })
     }
+
+    async fn get_packages_occurences_in_deps(&mut self, pkg_names: &Vec<String>) -> Result<DbResponse<HashMap<String, u32>>> {
+        let mut result: HashMap<String, u32> = HashMap::new();
+        pkg_names.iter().for_each(|name| _ = result.insert(name.to_owned(), 0));
+
+        self.connection.switch(DEPENDENCIES_TABLE)?;
+        let start = Instant::now();
+        let count = self.connection.dbsize()?;
+        let pkgs_deps_names: Vec<String> = self.connection.lskeys(count)?;
+
+        for pkg_name in pkgs_deps_names {
+            let dependencies: Dependencies = self.connection.run_query(Query::new().arg("LGET").arg(pkg_name))?;
+            for dep in dependencies.data {
+                if result.contains_key(&dep.group) {
+                    let count = result.get(&dep.group).unwrap() + 1;
+                    result.insert(dep.group, count);
+                }
+            }
+        }
+
+        let duration = start.elapsed();
+        Ok(DbResponse { result, duration })
+    }
+    
 }
 
 fn sort_values_by(data: &mut Vec<BasicPackageData>, key: &str) -> Result<()> {
@@ -279,7 +303,7 @@ mod test {
     #[tokio::test]
     async fn test_query() -> Result<()> {
         let mut db = SkytableClient::try_new()?;
-        let result = db.get_most_voted_pkgs(5).await?;
+        let result = db.get_packages_occurences_in_deps(&vec!["rust".to_string(), "go".to_string(), "sudo".to_string()]).await?;
         println!("{:?}", result);
         Ok(())
     }

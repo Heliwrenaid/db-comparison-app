@@ -12,7 +12,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 })
 export class DbTestComponent {
 
-  actions = ['Insert package', 'Get package by name', 'Remove comments of package', 'Get names of <n> sorted packages by given field and offset', 'Get <n> most voted packages basic data'];
+  actions = ['Insert package', 'Get package by name', 'Remove comments of package', 'Get names of <n> sorted packages by given field and offset', 'Get <n> most voted packages basic data', 'Get packages occurences count'];
   expandedIndex = 0;
 
   namesOfSortedPkgsResult: QueryResult<string[]> | void = undefined;
@@ -45,6 +45,12 @@ export class DbTestComponent {
   removeCommentsForm = new FormGroup({
     targetDb: new FormControl(Db.SurrealDb, [Validators.required]),
     pkgName: new FormControl('test-7777', [Validators.required]),
+  })
+
+  packagesOccurencesResult: QueryResult<Map<string, number>> | void = undefined;
+  packagesOccurencesForm = new FormGroup({
+    targetDb: new FormControl(Db.SurrealDb, [Validators.required]),
+    pkgNames: new FormControl('rust,go,python', [Validators.required]),
   })
 
   constructor (private dbQueryService: DbQueryService) {}
@@ -105,6 +111,17 @@ export class DbTestComponent {
       )
       .catch(err => console.error(err))
       .then(response => this.removeCommentsResult = response)
+  }
+  async getPackagesOccurencesInDeps() {
+    this.packagesOccurencesResult = undefined;
+    let data = this.packagesOccurencesForm.value;
+    let pkgNames = (data.pkgNames as string).split(',');
+    this.dbQueryService.getPackagesOccurencesInDeps(
+        data.targetDb as Db,
+        pkgNames as string[]
+      )
+      .catch(err => console.error(err))
+      .then(response => this.packagesOccurencesResult = response)
   }
 
 }

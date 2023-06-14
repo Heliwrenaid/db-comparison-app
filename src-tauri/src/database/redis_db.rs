@@ -198,6 +198,28 @@ impl DbActions for RedisDb {
         Ok(DbResponse { result: (), duration })
     }
 
+    async fn get_packages_occurences_in_deps(&mut self, pkg_deps_names: &Vec<String>) -> Result<DbResponse<HashMap<String, u32>>> {
+        let mut connection = self.client.get_connection()?;
+        let mut data: HashMap<String, u32> = HashMap::new();
+        pkg_deps_names.iter().for_each(|name| _ = data.insert(name.to_owned(), 0));
+
+        let start = Instant::now();
+        let all_pkg_names: Vec<String> = connection.smembers("pkgs_set")?;
+        for pkg_name in &all_pkg_names {
+            let group_list: Vec<String> = connection.smembers(format!("pkgs:{}:deps", pkg_name))?;
+            for pkg_dep_name in pkg_deps_names {
+                if group_list.contains(&format!("pkgs:{}:deps:{}", pkg_name, pkg_dep_name)) {
+                    if data.contains_key(pkg_dep_name) {
+                        let count = data.get(pkg_dep_name).unwrap() + 1;
+                        data.insert(pkg_dep_name.to_owned(), count);
+                    }
+                }
+            }
+        }
+        let duration = start.elapsed();        
+        Ok(DbResponse { result: data, duration })
+    }
+
 }
 
 #[cfg(test)]
@@ -209,7 +231,7 @@ mod test {
     #[tokio::test]
     async fn ss() -> Result<()> {
         let mut db = RedisDb::try_new()?;
-        let result = db.get_most_voted_pkgs(5).await?;
+        let result = db.get_packages_occurences_in_deps(&vec!["rust".to_string(), "go".to_string(), "sudo".to_string()]).await?;
         print!("{:?}", result.result);
         Ok(())
     }

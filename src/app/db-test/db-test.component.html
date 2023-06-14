@@ -143,6 +143,31 @@
                 </div>
             </div>
 
+            <div *ngSwitchCase="5">
+                <form [formGroup]="packagesOccurencesForm" (ngSubmit)="getPackagesOccurencesInDeps()">
+                    <div class="radio-group">
+                        <mat-button-toggle-group formControlName="targetDb">
+                            <mat-button-toggle value="SurrealDb">SurrealDB</mat-button-toggle>
+                            <mat-button-toggle value="Redis">Redis</mat-button-toggle>
+                            <mat-button-toggle value="Skytable">Skytable</mat-button-toggle>
+                        </mat-button-toggle-group>
+                    </div>
+                    <mat-form-field class="field">
+                        <mat-label>Package names</mat-label>
+                        <input matInput formControlName="pkgNames">
+                    </mat-form-field>
+                    <button mat-raised-button color="primary" [disabled]="!packagesOccurencesForm.valid">Submit</button>
+                </form>
+                <div *ngIf="packagesOccurencesResult">
+                    <div class="chart">
+                        <app-bar-chart [chartData]="packagesOccurencesResult.result | chartDataSeriesFromMap:'Package count'"></app-bar-chart>
+                    </div>
+                    <div>
+                        <pre>{{ packagesOccurencesResult | json }}</pre>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </cdk-accordion-item>
 </cdk-accordion>

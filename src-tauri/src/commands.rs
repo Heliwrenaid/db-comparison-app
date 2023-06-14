@@ -1,5 +1,5 @@
 use core::fmt;
-use std::{error::Error, time::Duration};
+use std::{error::Error, time::Duration, collections::HashMap};
 use serde::{Serialize, Deserialize};
 use anyhow::Result;
 
@@ -105,6 +105,16 @@ pub async fn remove_comments(target_db: Db, pkg_name: &str) -> Result<DbResponse
         Db::Redis => RedisDb::try_new()?.remove_comments(pkg_name).await?,
         Db::Skytable => SkytableClient::try_new()?.remove_comments(pkg_name).await?,
         Db::SurrealDb => SurrealDbClient::try_new().await?.remove_comments(pkg_name).await?,
+    };
+    Ok(response)
+}
+
+#[tauri::command]
+pub async fn get_packages_occurences_in_deps(target_db: Db, pkg_names: Vec<String>) -> Result<DbResponse<HashMap<String, u32>>, FrontendError> {
+    let response = match target_db {
+        Db::Redis => RedisDb::try_new()?.get_packages_occurences_in_deps(&pkg_names).await?,
+        Db::Skytable => SkytableClient::try_new()?.get_packages_occurences_in_deps(&pkg_names).await?,
+        Db::SurrealDb => SurrealDbClient::try_new().await?.get_packages_occurences_in_deps(&pkg_names).await?,
     };
     Ok(response)
 }

@@ -1,7 +1,7 @@
-use std::time::{Instant, Duration};
+use std::{time::{Instant, Duration}, collections::HashMap};
 
 
-use crate::models::{PackageData, BasicPackageData};
+use crate::models::{PackageData, BasicPackageData, PackageDependency};
 
 use super::{DbActions, DbResponse};
 use anyhow::{Result, Ok};
@@ -109,6 +109,23 @@ impl DbActions for SurrealDbClient {
         let duration = self.get_custom_query_time(&query).await?;
         Ok(DbResponse { result: (), duration })
     }
+
+    async fn get_packages_occurences_in_deps(&mut self, pkg_names: &Vec<String>) -> Result<DbResponse<HashMap<String, u32>>> {
+        let mut result: HashMap<String, u32> = HashMap::new();
+        pkg_names.iter().for_each(|name| _ = result.insert(name.to_owned(), 0));
+        
+        let start = Instant::now();
+        let pkg_deps_names: Vec<Vec<String>> = self.db.query("SELECT VALUE dependencies.group FROM pkgs").await?.take(0)?;
+        let pkg_deps_names: Vec<String> = pkg_deps_names.into_iter().flatten().collect();
+        for pkg_name in pkg_deps_names {
+            if result.contains_key(&pkg_name) {
+                let count = result.get(&pkg_name).unwrap() + 1;
+                result.insert(pkg_name, count);
+            }
+        }
+        let duration = start.elapsed();
+        Ok(DbResponse { result , duration })
+    }
 }
 
 #[cfg(test)]
@@ -120,7 +137,7 @@ mod test {
     #[tokio::test]
     async fn test_query() -> Result<()> {
         let mut db = SurrealDbClient::try_new().await?;
-        let result = db.get_most_voted_pkgs(5).await?;
+        let result = db.get_packages_occurences_in_deps(&vec!["rust".to_string(), "go".to_string(), "sudo".to_string()]).await?;
         println!("{:?}", result);
         Ok(())
     }

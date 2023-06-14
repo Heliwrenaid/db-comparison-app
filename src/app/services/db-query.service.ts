@@ -55,4 +55,10 @@ export class DbQueryService {
         )
     }
 
+    public getPackagesOccurencesInDeps(targetDb: Db, pkgNames: string[]) {
+        return invoke<QueryResult<Map<string, number>>>('get_packages_occurences_in_deps', 
+            { 'targetDb': targetDb, 'pkgNames': pkgNames }
+        )
+    }
+
 }

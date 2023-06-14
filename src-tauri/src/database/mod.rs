@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{time::Duration, collections::HashMap};
 use async_trait::async_trait;
 use serde::{Serialize, Deserialize};
 use anyhow::Result;
@@ -29,4 +29,5 @@ pub trait DbActions {
     async fn insert_pkg(&mut self, pkg: &PackageData) -> Result<DbResponse<()>>;
     async fn get_pkg(&mut self, pkg_name: &str) -> Result<DbResponse<PackageData>>;
     async fn remove_comments(&mut self, pkg_name: &str) -> Result<DbResponse<()>>;
+    async fn get_packages_occurences_in_deps(&mut self, pkg_names: &Vec<String>) -> Result<DbResponse<HashMap<String, u32>>>;
 }

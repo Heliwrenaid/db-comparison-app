@@ -1,3 +1,4 @@
+import { ChartDataSeriesFromMapPipe } from './data/chart-data-series-from-map.pipe';
 import { ChartDataSeriesPipe } from './data/chart-data-series.pipe';
 import { NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
@@ -22,7 +23,8 @@ import { BarChartComponent } from './db-test/charts/bar-chart/bar-chart.componen
     DbQueryComponent,
     DbTestComponent,
     BarChartComponent,
-    ChartDataSeriesPipe
+    ChartDataSeriesPipe,
+    ChartDataSeriesFromMapPipe,
   ],
   imports: [
     BrowserModule,

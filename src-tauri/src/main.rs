@@ -17,7 +17,8 @@ fn main() {
             commands::get_most_voted_pkgs,
             commands::insert_pkg,
             commands::get_pkg,
-            commands::remove_comments
+            commands::remove_comments,
+            commands::get_packages_occurences_in_deps
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
