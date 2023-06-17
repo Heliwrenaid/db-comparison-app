@@ -9,13 +9,21 @@ export class ChartDataSeriesFromMapPipe implements PipeTransform {
       data: [],
       seriesLabel: seriesLabel
     };
-    
-    let obj = data as Object;
-    let key: keyof typeof obj;
-    for (key in obj) {
-      chartData.data.push(obj[key]);
-      chartData.labels.push(key)
+
+    if (data instanceof Map) {
+      data.forEach((key, value) => {
+        chartData.data.push(key);
+        chartData.labels.push(value)
+      })
+    } else {
+      let obj = data as Object;
+      let key: keyof typeof obj;
+      for (key in obj) {
+        chartData.data.push(obj[key]);
+        chartData.labels.push(key)
+      }
     }
+    
     return chartData;
   }
 }

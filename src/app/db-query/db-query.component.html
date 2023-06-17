@@ -30,7 +30,7 @@
 
     <button mat-raised-button color="primary" class="run-button" (click)="timeOnly ? getQueryTime() : runQuery()">Run</button>
 
-    <mat-form-field class="textarea-field">
+    <mat-form-field *ngIf="!displayChart" class="textarea-field">
         <mat-label>Query result (seconds: {{ result.duration.secs }}, nanoseconds: {{ result.duration.nanos }})</mat-label>
         <textarea matInput 
             disabled="true"
@@ -41,5 +41,9 @@
             [ngModel]="result.result">
         </textarea>  
     </mat-form-field>
- 
+    <div *ngIf="displayChart" class="chart">
+        <p class="average-label">Average query time: {{ result.result }} ns</p>
+        <app-bar-chart [chartData]="timeData | chartDataSeriesFromMap:'Query time'" [chartType]="'line'"></app-bar-chart>
+    </div>
+    
 </div>

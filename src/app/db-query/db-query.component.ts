@@ -23,10 +23,14 @@ export class DbQueryComponent {
   numberOfRepeatings = 0;
   timeOnly = false;
 
+  timeData: Map<number, number> = new Map();
+  displayChart = false;
+
   constructor (private dbQueryService: DbQueryService) {}
 
   async runQuery() {
     if (this.query && this.targetDb) {
+      this.displayChart = false;
       if (this.doRepeat) {
         let nanosec = 0;
         for (let i = 0; i < this.numberOfRepeatings; i++) {
@@ -48,24 +52,30 @@ export class DbQueryComponent {
 
   async getQueryTime() {
     if (this.query && this.targetDb) {
+      this.displayChart = false;
       if (this.doRepeat) {
-        let nanosec = 0;
+        this.timeData = new Map();
+        let timeSum = 0;
         for (let i = 0; i < this.numberOfRepeatings; i++) {
           await this.dbQueryService.getQueryTime(this.query, this.targetDb)
-            .then(duration => nanosec += duration.secs * 1000000000 + duration.nanos)
-            .catch(error => this.result.result = error.message)
+            .then(duration => {
+              let durationNs = duration.secs * 1000000000 + duration.nanos;
+              timeSum += durationNs;
+              this.timeData.set(i, durationNs);
+            })
+            .catch(error => this.result.result = error.message);
         }
-        
         this.result.duration.nanos = 0;
         this.result.duration.secs = 0;
-        this.result.result = "Nanoseconds:" + nanosec / this.numberOfRepeatings;
+        this.result.result = "" + timeSum / this.numberOfRepeatings;
+        this.displayChart = true;
       } else {
         this.dbQueryService.getQueryTime(this.query, this.targetDb)
           .then(duration => {
             this.result.result = "OK";
             this.result.duration = duration;
           })
-          .catch(error => this.result.result = error.message)
+          .catch(error => this.result.result = error.message);
       }
     }
   }

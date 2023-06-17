@@ -15,6 +15,9 @@ export class BarChartComponent implements OnInit, OnChanges {
   @Input()
   chartData!: ChartDataSeries;
 
+  @Input()
+  chartType: ChartType = 'bar';
+
   barChartOptions: ChartConfiguration['options'] = {
     responsive: true,
     plugins: {
@@ -34,16 +37,18 @@ export class BarChartComponent implements OnInit, OnChanges {
       }
     }
   };
-  barChartType: ChartType = 'bar';
+
   barChartPlugins = [];
 
-  barChartData: ChartData<'bar'> = {
+  barChartData: ChartData = {
     labels: [],
     datasets: [
       { 
         data: [], 
         label: '',
         backgroundColor: '#d9600f',
+        borderColor: '#d9600f',
+        pointBackgroundColor: '#ff8f33',
       },
     ],
   };

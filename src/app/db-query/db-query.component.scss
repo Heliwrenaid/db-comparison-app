@@ -1,4 +1,5 @@
 .container {
+    margin-top: 32px;
     width: 100%;
     height: 100%;
     display: flex;
@@ -24,4 +25,13 @@
 
 .repeatings-field {
     margin-top: 8px;
+}
+
+.chart {
+    width: 800px;
+    height: 600px;
+}
+
+.average-label {
+    color: chartreuse;
 }
